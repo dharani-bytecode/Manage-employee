@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Employee Management System</title>
+  <link rel="stylesheet" href="style.css" />
+
+  <script type="module">
+    // IMPORTANT: In a real app, keep your apiKey secured (e.g., use Firebase Hosting environment variables
+    // or Cloud Functions, and ensure Firebase Security Rules are properly configured).
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-app.js";
+    import { getDatabase, ref, set, push, get, update, remove, child } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-database.js";
+
+    // ===== Your Firebase Config =====
+    const firebaseConfig = {
+      apiKey: "AIzaSyBDD74YI5-CMyURfBGFAyxCfc_Vca4DHKM",
+      authDomain: "employeemanage-44c37.firebaseapp.com",
+      databaseURL: "https://employeemanage-44c37-default-rtdb.asia-southeast1.firebasedatabase.app",
+      projectId: "employeemanage-44c37",
+      storageBucket: "employeemanage-44c37.firebasestorage.app",
+      messagingSenderId: "71346019287",
+      appId: "1:71346019287:web:ce9364fba5e3487ec6c992",
+      measurementId: "G-WLHYYWGJF4"
+    };
+
+    // Initialize Firebase
+    const app = initializeApp(firebaseConfig);
+    const db = getDatabase(app);
+
+    // Make available globally for use in script.js module
+    window.db = db;
+    window.ref = ref;
+    window.set = set;
+    window.push = push;
+    window.get = get;
+    window.update = update;
+    window.remove = remove;
+    window.child = child;
+  </script>
+</head>
+
+<body>
+  <section id="loginPage" class="page active">
+    <div class="login-container">
+      <h2>Employee Management System</h2>
+      <form id="loginForm">
+        <input type="text" id="username" placeholder="Username" required />
+        <input type="password" id="password" placeholder="Password" required />
+        <button type="submit">Login</button>
+        <p id="loginError" class="error"></p>
+      </form>
+    </div>
+  </section>
+
+  <header id="mainHeader" style="display: none;">
+    <h1>EmployeeManage</h1>
+    <nav>
+      <button data-page="dashboard">Dashboard</button>
+      <button data-page="employees">Employees</button>
+      <button data-page="salaries">Salaries</button>
+      <button data-page="leaves">Leaves</button>
+      <button id="logoutBtn">Logout</button>
+    </nav>
+  </header>
+
+  <section id="dashboard" class="page">
+    <div class="card">
+      <h2>Welcome Admin</h2>
+      <p>Manage Employees, Salaries, and Leaves efficiently using Firebase.</p>
+    </div>
+  </section>
+
+  <section id="employees" class="page">
+    <div class="card">
+      <h2>Employees</h2>
+      <form id="employeeForm">
+        <input type="hidden" id="employeeIndex" />
+        <input type="text" id="employeeName" placeholder="Employee Name" required />
+        <input type="text" id="employeeRole" placeholder="Role" required />
+        <button type="submit">Save Employee</button>
+      </form>
+      <hr style="margin: 20px 0; border: 0; border-top: 1px solid #eee;">
+      <input type="text" id="employeeFilter" placeholder="Search by name" onkeyup="filterEmployees()" class="filter" />
+      <ul id="employeeList"></ul>
+    </div>
+  </section>
+
+  <section id="salaries" class="page">
+    <div class="card">
+      <h2>Salaries</h2>
+      <form id="salaryForm">
+        <input type="hidden" id="salaryIndex" />
+        <input type="text" id="salaryName" placeholder="Employee Name" required />
+        <input type="number" id="salaryAmount" placeholder="Salary Amount" required /> 
+        <button type="submit">Save Salary</button>
+      </form>
+      <hr style="margin: 20px 0; border: 0; border-top: 1px solid #eee;">
+      <input type="text" id="salaryFilter" placeholder="Search by name" onkeyup="filterSalary()" class="filter" />
+      <ul id="salaryList"></ul>
+    </div>
+  </section>
+
+  <section id="leaves" class="page">
+    <div class="card">
+      <h2>Leaves</h2>
+      <form id="leaveForm">
+        <input type="hidden" id="leaveIndex" />
+        <input type="text" id="leaveName" placeholder="Employee Name" required />
+        <input type="number" id="leaveDays" placeholder="Leave Days" required />
+        <button type="submit">Save Leave</button>
+      </form>
+      <hr style="margin: 20px 0; border: 0; border-top: 1px solid #eee;">
+      <input type="text" id="leaveFilter" placeholder="Search by name" onkeyup="filterLeaves()" class="filter" />
+      <ul id="leaveList"></ul>
+    </div>
+  </section>
+
+  <script src="script.js" type="module"></script>
+</body>
+</html>
