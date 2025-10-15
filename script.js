@@ -39,7 +39,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const password = document.getElementById('password').value.trim();
 
         // Basic client-side admin login check
-        if (username === 'admin' && password === 'admin123') {
+        if (username === 'admin@gmail.com' && password === 'admin123') {
             loginPage.style.display = 'none';
             mainHeader.style.display = 'flex';
             loginError.textContent = '';
