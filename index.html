@@ -7,12 +7,10 @@
   <link rel="stylesheet" href="style.css" />
 
   <script type="module">
-    // IMPORTANT: In a real app, keep your apiKey secured (e.g., use Firebase Hosting environment variables
-    // or Cloud Functions, and ensure Firebase Security Rules are properly configured).
     import { initializeApp } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-app.js";
-    import { getDatabase, ref, set, push, get, update, remove, child } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-database.js";
+    import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-auth.js";
+    import { getDatabase, ref, set, push, get, update, remove } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-database.js";
 
-    // ===== Your Firebase Config =====
     const firebaseConfig = {
       apiKey: "AIzaSyBDD74YI5-CMyURfBGFAyxCfc_Vca4DHKM",
       authDomain: "employeemanage-44c37.firebaseapp.com",
@@ -24,11 +22,11 @@
       measurementId: "G-WLHYYWGJF4"
     };
 
-    // Initialize Firebase
     const app = initializeApp(firebaseConfig);
+    const auth = getAuth(app);
     const db = getDatabase(app);
 
-    // Make available globally for use in script.js module
+    window.auth = auth;
     window.db = db;
     window.ref = ref;
     window.set = set;
@@ -36,24 +34,41 @@
     window.get = get;
     window.update = update;
     window.remove = remove;
-    window.child = child;
+    window.createUserWithEmailAndPassword = createUserWithEmailAndPassword;
+    window.signInWithEmailAndPassword = signInWithEmailAndPassword;
+    window.signOut = signOut;
+    window.onAuthStateChanged = onAuthStateChanged;
   </script>
 </head>
 
 <body>
+  <!-- LOGIN / SIGNUP -->
   <section id="loginPage" class="page active">
     <div class="login-container">
       <h2>Employee Management System</h2>
       <form id="loginForm">
-        <input type="text" id="username" placeholder="Username" required />
-        <input type="password" id="password" placeholder="Password" required />
+        <input type="email" id="loginEmail" placeholder="Email" required />
+        <input type="password" id="loginPassword" placeholder="Password" required />
         <button type="submit">Login</button>
+        <p>Don’t have an account? <a href="#" id="showSignup">Sign Up</a></p>
         <p id="loginError" class="error"></p>
+      </form>
+
+      <form id="signupForm" style="display:none;">
+        <input type="email" id="signupEmail" placeholder="Email" required />
+        <input type="password" id="signupPassword" placeholder="Password" required />
+        <select id="signupRole" required>
+          <option value="employee">Employee</option>
+        </select>
+        <button type="submit">Sign Up</button>
+        <p>Already have an account? <a href="#" id="showLogin">Login</a></p>
+        <p id="signupError" class="error"></p>
       </form>
     </div>
   </section>
 
-  <header id="mainHeader" style="display: none;">
+  <!-- HEADER -->
+  <header id="mainHeader" style="display:none;">
     <h1>EmployeeManage</h1>
     <nav>
       <button data-page="dashboard">Dashboard</button>
@@ -64,54 +79,55 @@
     </nav>
   </header>
 
+  <!-- DASHBOARD -->
   <section id="dashboard" class="page">
     <div class="card">
-      <h2>Welcome Admin</h2>
+      <h2>Welcome <span id="userRoleLabel"></span></h2>
       <p>Manage Employees, Salaries, and Leaves efficiently using Firebase.</p>
     </div>
   </section>
 
+  <!-- EMPLOYEES -->
   <section id="employees" class="page">
     <div class="card">
       <h2>Employees</h2>
       <form id="employeeForm">
         <input type="hidden" id="employeeIndex" />
-        <input type="text" id="employeeName" placeholder="Employee Name" required />
-        <input type="text" id="employeeRole" placeholder="Role" required />
+        <input type="text" id="employeeName" placeholder="Employee Name (e.g., email)" required />
+        <input type="text" id="employeeRole" placeholder="Role (e.g., Manager)" required />
         <button type="submit">Save Employee</button>
       </form>
-      <hr style="margin: 20px 0; border: 0; border-top: 1px solid #eee;">
-      <input type="text" id="employeeFilter" placeholder="Search by name" onkeyup="filterEmployees()" class="filter" />
+      <input type="text" id="employeeSearch" placeholder="Search employees..." class="filter" />
       <ul id="employeeList"></ul>
     </div>
   </section>
 
+  <!-- SALARIES -->
   <section id="salaries" class="page">
     <div class="card">
       <h2>Salaries</h2>
       <form id="salaryForm">
         <input type="hidden" id="salaryIndex" />
-        <input type="text" id="salaryName" placeholder="Employee Name" required />
-        <input type="number" id="salaryAmount" placeholder="Salary Amount" required /> 
+        <input type="text" id="salaryName" placeholder="Employee Name (e.g., email)" required />
+        <input type="number" id="salaryAmount" placeholder="Salary Amount" required />
         <button type="submit">Save Salary</button>
       </form>
-      <hr style="margin: 20px 0; border: 0; border-top: 1px solid #eee;">
-      <input type="text" id="salaryFilter" placeholder="Search by name" onkeyup="filterSalary()" class="filter" />
+      <input type="text" id="salarySearch" placeholder="Search salaries..." class="filter" />
       <ul id="salaryList"></ul>
     </div>
   </section>
 
+  <!-- LEAVES -->
   <section id="leaves" class="page">
     <div class="card">
       <h2>Leaves</h2>
       <form id="leaveForm">
         <input type="hidden" id="leaveIndex" />
-        <input type="text" id="leaveName" placeholder="Employee Name" required />
+        <input type="text" id="leaveName" placeholder="Employee Name (e.g., email)" required />
         <input type="number" id="leaveDays" placeholder="Leave Days" required />
         <button type="submit">Save Leave</button>
       </form>
-      <hr style="margin: 20px 0; border: 0; border-top: 1px solid #eee;">
-      <input type="text" id="leaveFilter" placeholder="Search by name" onkeyup="filterLeaves()" class="filter" />
+      <input type="text" id="leaveSearch" placeholder="Search leaves..." class="filter" />
       <ul id="leaveList"></ul>
     </div>
   </section>
