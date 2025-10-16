@@ -121,11 +121,23 @@ document.addEventListener('DOMContentLoaded', () => {
 
   // Logout
   logoutBtn.addEventListener('click', () => {
-    currentUser = null;
-    currentRole = null;
-    mainHeader.style.display = 'none';
-    loginPage.style.display = 'flex';
-  });
+  currentUser = null;
+  currentRole = null;
+
+  // Hide header
+  mainHeader.style.display = 'none';
+
+  // Hide all pages
+  document.querySelectorAll('.page').forEach(p => p.style.display = 'none');
+
+  // Show only login page
+  loginPage.style.display = 'flex';
+
+  // Reset forms
+  loginForm.reset();
+  signupForm.reset();
+});
+
 
   // Page switching
   document.querySelectorAll('nav button').forEach(btn => {
