@@ -1,242 +1,319 @@
 /* ===== GENERAL STYLES ===== */
 * {
-  box-sizing: border-box;
-  margin: 0;
-  padding: 0;
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
 }
 
 body, html {
-  height: 100%;
-  font-family: 'Roboto', sans-serif;
-  background: #f4f7f9;
-  color: #333;
+    height: 100%;
+    font-family: 'Roboto', sans-serif;
+    background: #f4f7f9;
+    color: #333;
 }
 
 /* ===== HEADER & NAV ===== */
 header {
-  background: #4e54c8;
-  color: white;
-  padding: 15px 30px;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+    background: #4e54c8;
+    color: white;
+    padding: 15px 30px;
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: center;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+    width: 100%;
+    z-index: 10;
 }
 
 header h1 {
-  font-size: 1.8em;
-  margin-bottom: 10px;
+    font-size: 1.8em;
+}
+
+nav {
+    display: flex;
+    flex-direction: row;
+    gap: 10px;
 }
 
 nav button {
-  margin: 5px;
-  padding: 10px 15px;
-  font-size: 1em;
-  border: none;
-  border-radius: 6px;
-  background: #6c63ff;
-  color: white;
-  cursor: pointer;
-  transition: 0.2s;
+    padding: 10px 15px;
+    font-size: 1em;
+    border: none;
+    border-radius: 6px;
+    background: #6c63ff;
+    color: white;
+    cursor: pointer;
+    transition: background 0.2s, transform 0.1s;
 }
 
 nav button:hover {
-  background: #4e54c8;
+    background: #4e54c8;
+    transform: translateY(-1px);
 }
 
 /* ===== PAGE CONTAINER ===== */
 .page {
-  display: none; /* hidden by default, script controls visibility */
-  height: calc(100vh - 90px); 
-  /* Use flexbox to center content */
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  padding: 20px;
-  width: 100%;
+    display: none;
+    min-height: calc(100vh - 90px);
+    flex-direction: column;
+    justify-content: flex-start;
+    align-items: center;
+    padding: 20px;
+    width: 100%;
 }
 
-/* New: Card wrapper for main content sections */
-.page .card {
-  background: white;
-  padding: 30px 40px;
-  border-radius: 15px;
-  box-shadow: 0 6px 20px rgba(0,0,0,0.1);
-  width: 100%;
-  max-width: 600px;
-  /* text-align: center; REMOVED to align content left in Employee/Salary/Leave pages */
-}
-
-/* Ensure only the login page is visible initially via its section style in HTML */
+/* ===== LOGIN/SIGNUP PAGE UI ENHANCEMENTS (Good Login Page UI) ===== */
 #loginPage {
     display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+    padding: 0;
+    background: linear-gradient(135deg, #6c63ff 0%, #4e54c8 100%); /* Blue/purple gradient background */
 }
 
-/* ===== LOGIN PAGE & Container setup ===== */
 .login-container {
-  width: 100%;
-  max-width: 400px;
-  text-align: center;
-  background: white; /* Added background to login container for consistency */
-  padding: 40px;
-  border-radius: 15px;
-  box-shadow: 0 6px 20px rgba(0,0,0,0.1);
+    width: 100%;
+    max-width: 420px;
+    text-align: center;
+    background: rgba(255, 255, 255, 0.95);
+    padding: 45px 35px;
+    border-radius: 18px;
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+    animation: slideIn 0.5s ease-out;
 }
 
-.login-container input {
-  width: 100%;
-  padding: 12px;
-  margin-bottom: 15px;
-  font-size: 1em;
-  border-radius: 6px;
-  border: 1px solid #ccc;
+@keyframes slideIn {
+    from {
+        opacity: 0;
+        transform: translateY(-20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
 }
 
-.login-container button {
-  width: 100%;
-  padding: 12px;
-  font-size: 1em;
-  border: none;
-  border-radius: 6px;
-  background: #4e54c8;
-  color: white;
-  cursor: pointer;
+.login-container h2 {
+    color: #4e54c8;
+    margin-bottom: 30px;
+    font-size: 2em;
 }
 
-.login-container button:hover {
-  background: #6c63ff;
+.login-container form {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+    align-items: center;
+}
+
+.login-container input, .login-container select {
+    width: 100%;
+    padding: 14px;
+    margin-bottom: 5px;
+    font-size: 1.05em;
+    border-radius: 8px;
+    border: 1px solid #ddd;
+    background-color: #f9f9f9;
+}
+
+.login-container input:focus, .login-container select:focus {
+    border-color: #6c63ff;
+    box-shadow: 0 0 0 3px rgba(108, 99, 255, 0.25);
+    background-color: #fff;
+}
+
+.login-container button[type="submit"] {
+    width: 100%;
+    padding: 15px;
+    font-size: 1.1em;
+    border-radius: 8px;
+    background: #4e54c8;
+    color: white;
+    cursor: pointer;
+    font-weight: bold;
+    margin-top: 15px;
+    transition: background 0.3s ease, transform 0.1s ease, box-shadow 0.3s ease;
+}
+
+.login-container button[type="submit"]:hover {
+    background: #6c63ff;
+    transform: translateY(-2px);
+    box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+}
+
+.login-container p {
+    margin-top: 20px;
+    color: #555;
+    font-size: 0.95em;
+}
+
+.login-container p a {
+    color: #6c63ff;
+    text-decoration: none;
+    font-weight: bold;
+    transition: color 0.2s;
+}
+
+.login-container p a:hover {
+    color: #4e54c8;
+    text-decoration: underline;
 }
 
 .error {
-  color: red;
-  font-weight: bold;
-  margin-bottom: 0px;
-  margin-top: 10px;
+    color: #d9534f;
+    font-weight: bold;
+    margin-top: 10px;
+    font-size: 0.9em;
 }
 
-/* ===== HEADINGS & FORMS (Apply to all sections using .card) ===== */
-h2 {
-  color: #4e54c8;
-  margin-bottom: 20px;
-  text-align: center;
+
+/* ===== CARD STYLES (General) ===== */
+.page .card {
+    background: linear-gradient(145deg, #ffffff, #f9f9f9);
+    padding: 30px 40px;
+    border-radius: 15px;
+    box-shadow: 0 8px 30px rgba(0,0,0,0.1);
+    width: 100%;
+    max-width: 650px;
+    margin-bottom: 20px;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
 }
 
-form {
-  display: flex;
-  flex-direction: column;
-  gap: 15px;
-  align-items: center;
+.page .card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 12px 35px rgba(0,0,0,0.15);
 }
 
-form input, form select, form button {
-  padding: 10px 12px;
-  font-size: 1em;
-  border-radius: 6px;
-  border: 1px solid #ccc;
-  width: 100%;
-  max-width: 300px;
+#dashboard .card {
+    background: #e0e7ff; 
+    border-left: 5px solid #4e54c8;
+    text-align: center;
 }
 
-form button {
-  background: #4e54c8;
-  color: white;
-  font-weight: bold;
-  cursor: pointer;
-  max-width: 300px; /* Ensure button doesn't take full width in card */
+/* ===== INPUTS & BUTTONS (General Forms) ===== */
+form input, form select, input.filter {
+    width: 100%;
+    padding: 12px;
+    margin-bottom: 15px;
+    font-size: 1em;
+    border-radius: 6px;
+    border: 1px solid #ccc;
+    max-width: 100%;
 }
 
-form button:hover {
-  background: #6c63ff;
+form button[type="submit"] {
+    background: #4e54c8;
+    color: white;
+    font-weight: bold;
+    cursor: pointer;
+    max-width: 300px;
+    width: 100%;
+    border-radius: 6px;
 }
 
-/* ===== LISTS ===== */
+
+/* ===== LISTS & BUTTON ALIGNMENT/COLOR FIXES ===== */
 ul {
-  list-style: none;
-  padding: 0;
-  max-width: 550px; /* Increased max width for lists */
-  width: 100%;
-  margin: 0 auto;
+    list-style: none;
+    padding: 0;
+    width: 100%;
+    margin: 15px auto 0;
 }
 
 ul li {
-  padding: 12px 15px;
-  background: #fff;
-  margin-bottom: 10px;
-  border-radius: 10px;
-  font-size: 1.1em;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  border: 1px solid #eee;
-  transition: all 0.1s ease;
+    padding: 12px 18px; 
+    background: #fff;
+    margin-bottom: 10px;
+    border-radius: 12px; 
+    font-size: 1.1em;
+    display: flex;
+    justify-content: space-between; /* Pushes content and controls to opposite ends */
+    align-items: center; /* Vertically centers content and buttons */
+    border: 1px solid #eee;
 }
 
-ul li:hover {
-    box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+/* Groups the buttons together */
+.list-controls {
+    display: flex;
+    gap: 10px; /* Space between buttons */
+    align-items: center;
 }
 
-ul li span button {
-  margin-left: 5px;
-  padding: 5px 10px;
-  font-size: 0.9em;
-  border-radius: 5px;
-  border: none;
-  cursor: pointer;
-  background: #6c63ff;
-  color: white;
-  width: auto; /* Override form button max-width */
-  max-width: none;
+.list-controls button {
+    padding: 7px 14px; 
+    font-size: 0.9em;
+    border-radius: 6px;
+    border: none;
+    cursor: pointer;
+    transition: background 0.2s, transform 0.1s;
+    min-width: 60px;
+    text-align: center;
 }
 
-ul li span button:hover {
-  background: #4e54c8;
+/* Edit Button Color */
+.list-controls button:first-child {
+    background: #007bff; 
+    color: white;
 }
 
-/* ===== FILTER INPUT ===== */
-input.filter {
-  width: 100%;
-  max-width: 550px; /* Match list width */
-  padding: 10px;
-  font-size: 1em;
-  margin-bottom: 15px;
-  border-radius: 6px;
-  border: 1px solid #ccc;
-  display: block;
-  margin: 15px auto;
+.list-controls button:first-child:hover {
+    background: #0056b3; 
+    transform: scale(1.05);
 }
 
-/* ===== ANIMATION ===== */
-.page {
-  animation: fadeIn 0.3s ease-in-out;
+/* Delete Button Color */
+.list-controls button:last-child {
+    background: #dc3545; 
+    color: white;
 }
 
-@keyframes fadeIn {
-  from {opacity: 0;}
-  to {opacity: 1;}
+.list-controls button:last-child:hover {
+    background: #bd2130; 
+    transform: scale(1.05);
 }
+
 
 /* ===== RESPONSIVE ===== */
 @media (max-width: 768px) {
-  .page .card, .login-container {
-    padding: 20px;
-  }
+    .page .card, .login-container {
+        padding: 20px;
+    }
+    
+    .login-container {
+        max-width: 90%;
+    }
 
-  header {
-    flex-direction: column;
-    gap: 10px;
-  }
+    /* Header changes for small screen */
+    header {
+        flex-direction: column;
+        gap: 10px;
+        padding: 10px 15px;
+    }
 
-  nav button {
-    padding: 8px 12px;
-  }
+    /* List item stacking for mobile */
+    ul li {
+        flex-direction: column;
+        align-items: flex-start;
+        padding: 10px;
+        font-size: 1em;
+    }
+    
+    ul li span {
+        margin-bottom: 8px;
+        word-break: break-all;
+    }
 
-  ul li {
-    flex-direction: column;
-    align-items: flex-start;
-    padding: 10px;
-  }
-  
-  ul li span {
-      margin-top: 5px;
-  }
+    .list-controls {
+        justify-content: flex-end;
+        width: 100%;
+        margin-top: 5px;
+    }
+
+    .list-controls button {
+        padding: 6px 10px;
+        font-size: 0.85em;
+        min-width: 50px;
+    }
 }
