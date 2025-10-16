@@ -24,15 +24,17 @@ header {
     box-shadow: 0 4px 15px rgba(0,0,0,0.2);
     width: 100%;
     z-index: 10;
+    flex-wrap: wrap;
 }
 
 header h1 {
     font-size: 1.8em;
+    flex: 1 1 auto;
 }
 
 nav {
     display: flex;
-    flex-direction: row;
+    flex-wrap: wrap;
     gap: 10px;
 }
 
@@ -63,14 +65,14 @@ nav button:hover {
     width: 100%;
 }
 
-/* ===== LOGIN/SIGNUP PAGE UI ENHANCEMENTS (Good Login Page UI) ===== */
+/* ===== LOGIN/SIGNUP PAGE ===== */
 #loginPage {
     display: flex;
     justify-content: center;
     align-items: center;
     min-height: 100vh;
     padding: 0;
-    background: linear-gradient(135deg, #6c63ff 0%, #4e54c8 100%); /* Blue/purple gradient background */
+    background: linear-gradient(135deg, #6c63ff 0%, #4e54c8 100%);
 }
 
 .login-container {
@@ -111,7 +113,6 @@ nav button:hover {
 .login-container input, .login-container select {
     width: 100%;
     padding: 14px;
-    margin-bottom: 5px;
     font-size: 1.05em;
     border-radius: 8px;
     border: 1px solid #ddd;
@@ -168,8 +169,7 @@ nav button:hover {
     font-size: 0.9em;
 }
 
-
-/* ===== CARD STYLES (General) ===== */
+/* ===== CARD STYLES ===== */
 .page .card {
     background: linear-gradient(145deg, #ffffff, #f9f9f9);
     padding: 30px 40px;
@@ -187,12 +187,12 @@ nav button:hover {
 }
 
 #dashboard .card {
-    background: #e0e7ff; 
+    background: #e0e7ff;
     border-left: 5px solid #4e54c8;
     text-align: center;
 }
 
-/* ===== INPUTS & BUTTONS (General Forms) ===== */
+/* ===== FORM INPUTS & BUTTONS ===== */
 form input, form select, input.filter {
     width: 100%;
     padding: 12px;
@@ -213,8 +213,7 @@ form button[type="submit"] {
     border-radius: 6px;
 }
 
-
-/* ===== LISTS & BUTTON ALIGNMENT/COLOR FIXES ===== */
+/* ===== LIST STYLING ===== */
 ul {
     list-style: none;
     padding: 0;
@@ -229,15 +228,14 @@ ul li {
     border-radius: 12px; 
     font-size: 1.1em;
     display: flex;
-    justify-content: space-between; /* Pushes content and controls to opposite ends */
-    align-items: center; /* Vertically centers content and buttons */
+    justify-content: space-between;
+    align-items: center;
     border: 1px solid #eee;
 }
 
-/* Groups the buttons together */
 .list-controls {
     display: flex;
-    gap: 10px; /* Space between buttons */
+    gap: 10px;
     align-items: center;
 }
 
@@ -252,7 +250,6 @@ ul li {
     text-align: center;
 }
 
-/* Edit Button Color */
 .list-controls button:first-child {
     background: #007bff; 
     color: white;
@@ -263,7 +260,6 @@ ul li {
     transform: scale(1.05);
 }
 
-/* Delete Button Color */
 .list-controls button:last-child {
     background: #dc3545; 
     color: white;
@@ -274,8 +270,7 @@ ul li {
     transform: scale(1.05);
 }
 
-
-/* ===== RESPONSIVE ===== */
+/* ===== RESPONSIVE MOBILE ===== */
 @media (max-width: 768px) {
     .page .card, .login-container {
         padding: 20px;
@@ -285,14 +280,19 @@ ul li {
         max-width: 90%;
     }
 
-    /* Header changes for small screen */
     header {
         flex-direction: column;
         gap: 10px;
+        align-items: flex-start;
         padding: 10px 15px;
     }
 
-    /* List item stacking for mobile */
+    nav {
+        width: 100%;
+        justify-content: space-around;
+        flex-wrap: wrap;
+    }
+
     ul li {
         flex-direction: column;
         align-items: flex-start;
@@ -302,13 +302,15 @@ ul li {
     
     ul li span {
         margin-bottom: 8px;
-        word-break: break-all;
+        word-break: break-word;
     }
 
     .list-controls {
         justify-content: flex-end;
         width: 100%;
         margin-top: 5px;
+        flex-wrap: wrap;
+        gap: 5px;
     }
 
     .list-controls button {
