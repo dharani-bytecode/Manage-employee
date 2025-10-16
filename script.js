@@ -1,380 +1,280 @@
-// Await window setup for global firebase objects before running code
-// This ensures that the global objects exported from the <script type="module"> in HTML are available.
 document.addEventListener('DOMContentLoaded', () => {
+  const { db, ref, set, get, push, update, remove } = window;
 
-    // Destructure global Firebase objects for cleaner use
-    const { db, ref, set, push, get, update, remove } = window;
+  const ADMIN_USERNAME = "admin@example.com";
+  const ADMIN_PASSWORD = "admin123";
 
-    // =========================================================
-    //                      DOM ELEMENTS
-    // =========================================================
-    const loginForm = document.getElementById('loginForm');
-    const loginError = document.getElementById('loginError');
-    const mainHeader = document.getElementById('mainHeader');
-    const loginPage = document.getElementById('loginPage');
-    const logoutBtn = document.getElementById('logoutBtn');
+  // Elements
+  const loginForm = document.getElementById('loginForm');
+  const signupForm = document.getElementById('signupForm');
+  const loginError = document.getElementById('loginError');
+  const signupError = document.getElementById('signupError');
+  const showSignup = document.getElementById('showSignup');
+  const showLogin = document.getElementById('showLogin');
+  const mainHeader = document.getElementById('mainHeader');
+  const loginPage = document.getElementById('loginPage');
+  const logoutBtn = document.getElementById('logoutBtn');
+  const userRoleLabel = document.getElementById('userRoleLabel');
 
-    // Employee elements
-    const employeeForm = document.getElementById('employeeForm');
-    const employeeList = document.getElementById('employeeList');
-    const employeeFilterInput = document.getElementById('employeeFilter');
+  const employeeForm = document.getElementById('employeeForm');
+  const salaryForm = document.getElementById('salaryForm');
+  const leaveForm = document.getElementById('leaveForm');
 
-    // Salary elements
-    const salaryForm = document.getElementById('salaryForm');
-    const salaryList = document.getElementById('salaryList');
-    const salaryFilterInput = document.getElementById('salaryFilter');
+  const employeeList = document.getElementById('employeeList');
+  const salaryList = document.getElementById('salaryList');
+  const leaveList = document.getElementById('leaveList');
 
-    // Leave elements
-    const leaveForm = document.getElementById('leaveForm');
-    const leaveList = document.getElementById('leaveList');
-    const leaveFilterInput = document.getElementById('leaveFilter');
+  const employeeSearch = document.getElementById('employeeSearch');
+  const salarySearch = document.getElementById('salarySearch');
+  const leaveSearch = document.getElementById('leaveSearch');
 
-    // =========================================================
-    //                      LOGIN & NAVIGATION
-    // =========================================================
+  let currentUser = null;
+  let currentRole = null;
 
-    loginForm.addEventListener('submit', (e) => {
-        e.preventDefault();
-        const username = document.getElementById('username').value.trim();
-        const password = document.getElementById('password').value.trim();
+  // Switch login/signup
+  showSignup.addEventListener('click', e => {
+    e.preventDefault();
+    loginForm.style.display = 'none';
+    signupForm.style.display = 'block';
+  });
 
-        // Basic client-side admin login check
-        if (username === 'admin@gmail.com' && password === 'admin123') {
-            loginPage.style.display = 'none';
-            mainHeader.style.display = 'flex';
-            loginError.textContent = '';
-            showPage('dashboard');
-        } else {
-            loginError.textContent = "❌ Invalid username or password!";
+  showLogin.addEventListener('click', e => {
+    e.preventDefault();
+    signupForm.style.display = 'none';
+    loginForm.style.display = 'block';
+  });
+
+  // Signup
+  signupForm.addEventListener('submit', async e => {
+    e.preventDefault();
+    const username = signupEmail.value.trim();
+    const password = signupPassword.value.trim();
+    const role = 'employee';
+
+    try {
+      const usersRef = ref(db, 'users');
+      const snapshot = await get(usersRef);
+      if (snapshot.exists()) {
+        const users = snapshot.val();
+        for (const key in users) {
+          if (users[key].username === username) {
+            signupError.textContent = "❌ Username already exists!";
+            return;
+          }
         }
-    });
-
-    // Central function to control page visibility
-    function showPage(pageId) {
-        // Hide all pages
-        document.querySelectorAll('.page').forEach(p => p.style.display = 'none');
-
-        // Show the requested page
-        const page = document.getElementById(pageId);
-        if (page) {
-            page.style.display = 'flex';
-        }
-
-        // Render data only when navigating to the respective management page
-        switch (pageId) {
-            case 'employees':
-                renderEmployees();
-                break;
-            case 'salaries':
-                renderSalary();
-                break;
-            case 'leaves':
-                renderLeaves();
-                break;
-        }
+      }
+      await push(usersRef, { username, password, role });
+      signupError.textContent = "✅ Signup successful! Please login.";
+      signupForm.reset();
+      signupForm.style.display = 'none';
+      loginForm.style.display = 'block';
+    } catch (error) {
+      signupError.textContent = error.message;
     }
+  });
 
-    function logout() {
-        mainHeader.style.display = 'none';
-        showPage('loginPage');
-        // Reset forms/filters on logout for security/cleanliness
-        employeeForm.reset(); salaryForm.reset(); leaveForm.reset();
-        employeeFilterInput.value = ''; salaryFilterInput.value = ''; leaveFilterInput.value = '';
-    }
-    
-    // Attach event listeners to all navigation buttons using data attributes
-    document.querySelectorAll('nav button').forEach(button => {
-        if (button.id === 'logoutBtn') {
-            button.addEventListener('click', logout);
+  // Login
+  loginForm.addEventListener('submit', async e => {
+    e.preventDefault();
+    const username = loginEmail.value.trim();
+    const password = loginPassword.value.trim();
+
+    try {
+      if (username === ADMIN_USERNAME && password === ADMIN_PASSWORD) {
+        currentUser = ADMIN_USERNAME;
+        currentRole = 'admin';
+      } else {
+        const snapshot = await get(ref(db, 'users'));
+        if (snapshot.exists()) {
+          const users = snapshot.val();
+          let found = false;
+          for (const key in users) {
+            const user = users[key];
+            if (user.username === username && user.password === password) {
+              found = true;
+              currentUser = username;
+              currentRole = 'employee';
+              break;
+            }
+          }
+          if (!found) {
+            loginError.textContent = "❌ Invalid username or password.";
+            return;
+          }
         } else {
-            const pageId = button.getAttribute('data-page');
-            button.addEventListener('click', () => showPage(pageId));
+          loginError.textContent = "❌ No users found!";
+          return;
         }
-    });
+      }
 
-    // =========================================================
-    //                     HELPER FUNCTION
-    // =========================================================
+      loginError.textContent = "";
+      loginPage.style.display = 'none';
+      mainHeader.style.display = 'flex';
+      userRoleLabel.textContent = currentRole;
+      showPage('dashboard');
+      applyRoleAccess();
+      loadAllData();
+    } catch (error) {
+      loginError.textContent = error.message;
+    }
+  });
 
-    // Generic list item builder
-    function buildListItem(key, displayContent, editFn, deleteFn) {
+  // Logout
+  logoutBtn.addEventListener('click', () => {
+    currentUser = null;
+    currentRole = null;
+    mainHeader.style.display = 'none';
+    loginPage.style.display = 'flex';
+  });
+
+  // Page switching
+  document.querySelectorAll('nav button').forEach(btn => {
+    if (btn.id !== 'logoutBtn') {
+      btn.addEventListener('click', () => showPage(btn.getAttribute('data-page')));
+    }
+  });
+
+  function showPage(pageId) {
+    document.querySelectorAll('.page').forEach(p => p.style.display = 'none');
+    document.getElementById(pageId).style.display = 'flex';
+  }
+
+  function applyRoleAccess() {
+    if (currentRole === 'employee') {
+      employeeForm.style.display = 'none';
+      salaryForm.style.display = 'none';
+      leaveForm.style.display = 'none';
+    } else {
+      employeeForm.style.display = 'flex';
+      salaryForm.style.display = 'flex';
+      leaveForm.style.display = 'flex';
+    }
+  }
+
+  async function loadAllData() {
+    await loadEmployees();
+    await loadSalaries();
+    await loadLeaves();
+  }
+
+  // --- CRUD & Load Functions ---
+  async function loadEmployees() {
+    const snapshot = await get(ref(db, 'employees'));
+    employeeList.innerHTML = '';
+    if (snapshot.exists()) {
+      const data = snapshot.val();
+      for (const id in data) {
+        const emp = data[id];
         const li = document.createElement('li');
-        // NOTE: editFn and deleteFn are made globally available below to work with inline onclick
-        li.innerHTML = `
-            ${displayContent}
-            <span>
-                <button onclick="${editFn}('${key}')">Edit</button>
-                <button onclick="${deleteFn}('${key}')">Delete</button>
-            </span>
-        `;
-        return li;
+        li.innerHTML = `<span>${emp.name} - ${emp.role}</span>` +
+          (currentRole === 'admin' ? `<button onclick="editEmployee('${id}','${emp.name}','${emp.role}')">Edit</button>
+          <button onclick="deleteEmployee('${id}')">Delete</button>` : '');
+        employeeList.appendChild(li);
+      }
     }
+  }
 
-    // =========================================================
-    //                       EMPLOYEES LOGIC
-    // =========================================================
+  async function loadSalaries() {
+    const snapshot = await get(ref(db, 'salaries'));
+    salaryList.innerHTML = '';
+    if (snapshot.exists()) {
+      const data = snapshot.val();
+      for (const id in data) {
+        const sal = data[id];
+        const li = document.createElement('li');
+        li.innerHTML = `<span>${sal.name} - ₹${sal.amount}</span>` +
+          (currentRole === 'admin' ? `<button onclick="editSalary('${id}','${sal.name}','${sal.amount}')">Edit</button>
+          <button onclick="deleteSalary('${id}')">Delete</button>` : '');
+        salaryList.appendChild(li);
+      }
+    }
+  }
 
-    // Expose CRUD functions globally for use in the list item buttons (onclick)
-    window.editEmployee = editEmployee; 
-    window.deleteEmployee = deleteEmployee;
-    window.filterEmployees = filterEmployees; // Expose filter function for onkeyup
+  async function loadLeaves() {
+    const snapshot = await get(ref(db, 'leaves'));
+    leaveList.innerHTML = '';
+    if (snapshot.exists()) {
+      const data = snapshot.val();
+      for (const id in data) {
+        const lv = data[id];
+        const li = document.createElement('li');
+        li.innerHTML = `<span>${lv.name} - ${lv.days} days</span>` +
+          (currentRole === 'admin' ? `<button onclick="editLeave('${id}','${lv.name}','${lv.days}')">Edit</button>
+          <button onclick="deleteLeave('${id}')">Delete</button>` : '');
+        leaveList.appendChild(li);
+      }
+    }
+  }
 
-    employeeForm.addEventListener('submit', async (e) => {
-        e.preventDefault();
-        const name = document.getElementById('employeeName').value.trim();
-        const role = document.getElementById('employeeRole').value.trim();
-        const index = document.getElementById('employeeIndex').value;
+  // Edit/Delete functions
+  window.editEmployee = (id, name, role) => { employeeIndex.value = id; employeeName.value = name; employeeRole.value = role; };
+  window.deleteEmployee = async id => { await remove(ref(db, `employees/${id}`)); loadEmployees(); };
 
-        if (!name || !role) return; // Basic validation
+  window.editSalary = (id, name, amount) => { salaryIndex.value = id; salaryName.value = name; salaryAmount.value = amount; };
+  window.deleteSalary = async id => { await remove(ref(db, `salaries/${id}`)); loadSalaries(); };
 
-        try {
-            const employeeData = { name, role };
-            if (index) {
-                // UPDATE
-                await update(ref(db, `employees/${index}`), employeeData);
-            } else {
-                // CREATE
-                const newRef = push(ref(db, "employees"));
-                await set(newRef, employeeData);
-            }
-            employeeForm.reset();
-            document.getElementById('employeeIndex').value = ''; // Clear index after save
-            renderEmployees();
-        } catch (error) {
-            console.error("Error saving employee:", error);
-            alert("Failed to save employee data. Check console for details.");
-        }
+  window.editLeave = (id, name, days) => { leaveIndex.value = id; leaveName.value = name; leaveDays.value = days; };
+  window.deleteLeave = async id => { await remove(ref(db, `leaves/${id}`)); loadLeaves(); };
+
+  // Add forms
+  employeeForm.addEventListener('submit', async e => {
+    e.preventDefault();
+    if (currentRole !== 'admin') return;
+    const name = employeeName.value.trim();
+    const role = employeeRole.value.trim();
+    if (!name || !role) return;
+    if (employeeIndex.value) await update(ref(db, `employees/${employeeIndex.value}`), { name, role });
+    else await push(ref(db, 'employees'), { name, role });
+    employeeForm.reset();
+    employeeIndex.value = '';
+    loadEmployees();
+  });
+
+  salaryForm.addEventListener('submit', async e => {
+    e.preventDefault();
+    if (currentRole !== 'admin') return;
+    const name = salaryName.value.trim();
+    const amount = salaryAmount.value.trim();
+    if (!name || !amount) return;
+    if (salaryIndex.value) await update(ref(db, `salaries/${salaryIndex.value}`), { name, amount });
+    else await push(ref(db, 'salaries'), { name, amount });
+    salaryForm.reset();
+    salaryIndex.value = '';
+    loadSalaries();
+  });
+
+  leaveForm.addEventListener('submit', async e => {
+    e.preventDefault();
+    if (currentRole !== 'admin') return;
+    const name = leaveName.value.trim();
+    const days = leaveDays.value.trim();
+    if (!name || !days) return;
+    if (leaveIndex.value) await update(ref(db, `leaves/${leaveIndex.value}`), { name, days });
+    else await push(ref(db, 'leaves'), { name, days });
+    leaveForm.reset();
+    leaveIndex.value = '';
+    loadLeaves();
+  });
+
+  // --- SEARCH FILTER ---
+  employeeSearch.addEventListener('input', () => {
+    const val = employeeSearch.value.toLowerCase();
+    document.querySelectorAll('#employeeList li').forEach(li => {
+      li.style.display = li.querySelector('span').textContent.toLowerCase().includes(val) ? 'flex' : 'none';
     });
+  });
 
-    async function renderEmployees(filter = '') {
-        employeeList.innerHTML = '';
-        try {
-            const snapshot = await get(ref(db, "employees"));
-            if (snapshot.exists()) {
-                const data = snapshot.val();
-                const lowerCaseFilter = filter.toLowerCase();
-
-                Object.keys(data).forEach(key => {
-                    const emp = data[key];
-                    if (emp.name.toLowerCase().includes(lowerCaseFilter)) {
-                        const content = `${emp.name} - ${emp.role}`;
-                        const li = buildListItem(key, content, 'editEmployee', 'deleteEmployee');
-                        employeeList.appendChild(li);
-                    }
-                });
-            }
-        } catch (error) {
-            console.error("Error rendering employees:", error);
-        }
-    }
-
-    async function editEmployee(id) {
-        try {
-            const snapshot = await get(ref(db, `employees/${id}`));
-            if (snapshot.exists()) {
-                const emp = snapshot.val();
-                document.getElementById('employeeName').value = emp.name;
-                document.getElementById('employeeRole').value = emp.role;
-                document.getElementById('employeeIndex').value = id;
-            }
-        } catch (error) {
-            console.error("Error fetching employee for edit:", error);
-        }
-    }
-
-    async function deleteEmployee(id) {
-        if (!confirm("Are you sure you want to delete this employee?")) return;
-        try {
-            await remove(ref(db, `employees/${id}`));
-            renderEmployees();
-        } catch (error) {
-            console.error("Error deleting employee:", error);
-            alert("Failed to delete employee.");
-        }
-    }
-
-    function filterEmployees() {
-        renderEmployees(employeeFilterInput.value);
-    }
-
-    // =========================================================
-    //                       SALARIES LOGIC
-    // =========================================================
-
-    window.editSalary = editSalary;
-    window.deleteSalary = deleteSalary;
-    window.filterSalary = filterSalary;
-
-    salaryForm.addEventListener('submit', async (e) => {
-        e.preventDefault();
-        const name = document.getElementById('salaryName').value.trim();
-        const amount = document.getElementById('salaryAmount').value.trim();
-        const index = document.getElementById('salaryIndex').value;
-
-        if (!name || !amount) return;
-
-        try {
-            // Convert amount to number (best practice for numeric data)
-            const salaryData = { name, amount: parseFloat(amount) };
-            if (index) {
-                await update(ref(db, `salaries/${index}`), salaryData);
-            } else {
-                const newRef = push(ref(db, "salaries"));
-                await set(newRef, salaryData);
-            }
-            salaryForm.reset();
-            document.getElementById('salaryIndex').value = '';
-            renderSalary();
-        } catch (error) {
-            console.error("Error saving salary:", error);
-            alert("Failed to save salary data.");
-        }
+  salarySearch.addEventListener('input', () => {
+    const val = salarySearch.value.toLowerCase();
+    document.querySelectorAll('#salaryList li').forEach(li => {
+      li.style.display = li.querySelector('span').textContent.toLowerCase().includes(val) ? 'flex' : 'none';
     });
+  });
 
-    async function renderSalary(filter = '') {
-        salaryList.innerHTML = '';
-        try {
-            const snapshot = await get(ref(db, "salaries"));
-            if (snapshot.exists()) {
-                const data = snapshot.val();
-                const lowerCaseFilter = filter.toLowerCase();
-
-                Object.keys(data).forEach(key => {
-                    const s = data[key];
-                    if (s.name.toLowerCase().includes(lowerCaseFilter)) {
-                        // Use toLocaleString for currency formatting
-                        const formattedAmount = new Intl.NumberFormat('en-IN', { style: 'currency', currency: 'INR' }).format(s.amount);
-                        const content = `${s.name} - ${formattedAmount}`;
-                        const li = buildListItem(key, content, 'editSalary', 'deleteSalary');
-                        salaryList.appendChild(li);
-                    }
-                });
-            }
-        } catch (error) {
-            console.error("Error rendering salaries:", error);
-        }
-    }
-
-    async function editSalary(id) {
-        try {
-            const snapshot = await get(ref(db, `salaries/${id}`));
-            if (snapshot.exists()) {
-                const s = snapshot.val();
-                document.getElementById('salaryName').value = s.name;
-                document.getElementById('salaryAmount').value = s.amount;
-                document.getElementById('salaryIndex').value = id;
-            }
-        } catch (error) {
-            console.error("Error fetching salary for edit:", error);
-        }
-    }
-
-    async function deleteSalary(id) {
-        if (!confirm("Are you sure you want to delete this salary record?")) return;
-        try {
-            await remove(ref(db, `salaries/${id}`));
-            renderSalary();
-        } catch (error) {
-            console.error("Error deleting salary:", error);
-            alert("Failed to delete salary record.");
-        }
-    }
-
-    function filterSalary() {
-        renderSalary(salaryFilterInput.value);
-    }
-
-    // =========================================================
-    //                       LEAVES LOGIC
-    // =========================================================
-
-    window.editLeave = editLeave;
-    window.deleteLeave = deleteLeave;
-    window.filterLeaves = filterLeaves;
-
-    leaveForm.addEventListener('submit', async (e) => {
-        e.preventDefault();
-        const name = document.getElementById('leaveName').value.trim();
-        const days = document.getElementById('leaveDays').value.trim();
-        const index = document.getElementById('leaveIndex').value;
-
-        if (!name || !days) return;
-        
-        try {
-            // Convert days to integer
-            const leaveData = { name, days: parseInt(days) };
-            if (index) {
-                await update(ref(db, `leaves/${index}`), leaveData);
-            } else {
-                const newRef = push(ref(db, "leaves"));
-                await set(newRef, leaveData);
-            }
-            leaveForm.reset();
-            document.getElementById('leaveIndex').value = '';
-            renderLeaves();
-        } catch (error) {
-            console.error("Error saving leave:", error);
-            alert("Failed to save leave data.");
-        }
+  leaveSearch.addEventListener('input', () => {
+    const val = leaveSearch.value.toLowerCase();
+    document.querySelectorAll('#leaveList li').forEach(li => {
+      li.style.display = li.querySelector('span').textContent.toLowerCase().includes(val) ? 'flex' : 'none';
     });
-
-    async function renderLeaves(filter = '') {
-        leaveList.innerHTML = '';
-        try {
-            const snapshot = await get(ref(db, "leaves"));
-            if (snapshot.exists()) {
-                const data = snapshot.val();
-                const lowerCaseFilter = filter.toLowerCase();
-
-                Object.keys(data).forEach(key => {
-                    const l = data[key];
-                    if (l.name.toLowerCase().includes(lowerCaseFilter)) {
-                        const content = `${l.name} - ${l.days} days`;
-                        const li = buildListItem(key, content, 'editLeave', 'deleteLeave');
-                        leaveList.appendChild(li);
-                    }
-                });
-            }
-        } catch (error) {
-            console.error("Error rendering leaves:", error);
-        }
-    }
-
-    async function editLeave(id) {
-        try {
-            const snapshot = await get(ref(db, `leaves/${id}`));
-            if (snapshot.exists()) {
-                const l = snapshot.val();
-                document.getElementById('leaveName').value = l.name;
-                document.getElementById('leaveDays').value = l.days;
-                document.getElementById('leaveIndex').value = id;
-            }
-        } catch (error) {
-            console.error("Error fetching leave for edit:", error);
-        }
-    }
-
-    async function deleteLeave(id) {
-        if (!confirm("Are you sure you want to delete this leave record?")) return;
-        try {
-            await remove(ref(db, `leaves/${id}`));
-            renderLeaves();
-        } catch (error) {
-            console.error("Error deleting leave:", error);
-            alert("Failed to delete leave record.");
-        }
-    }
-
-    function filterLeaves() {
-        renderLeaves(leaveFilterInput.value);
-    }
-    
-    // =========================================================
-    //                      INITIALIZATION
-    // =========================================================
-    // Ensure the login page is shown initially
-    if (loginPage.style.display === 'none') {
-        loginPage.style.display = 'flex';
-        mainHeader.style.display = 'none';
-    }
+  });
 });
