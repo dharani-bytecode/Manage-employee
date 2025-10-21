@@ -28,6 +28,11 @@ document.addEventListener('DOMContentLoaded', () => {
   const salarySearch = document.getElementById('salarySearch');
   const leaveSearch = document.getElementById('leaveSearch');
 
+  // Dashboard stats elements
+  const totalEmployeesLabel = document.getElementById('totalEmployees');
+  const totalSalariesLabel = document.getElementById('totalSalaries');
+  const totalLeavesLabel = document.getElementById('totalLeaves');
+
   let currentUser = null;
   let currentRole = null;
 
@@ -121,23 +126,11 @@ document.addEventListener('DOMContentLoaded', () => {
 
   // Logout
   logoutBtn.addEventListener('click', () => {
-  currentUser = null;
-  currentRole = null;
-
-  // Hide header
-  mainHeader.style.display = 'none';
-
-  // Hide all pages
-  document.querySelectorAll('.page').forEach(p => p.style.display = 'none');
-
-  // Show only login page
-  loginPage.style.display = 'flex';
-
-  // Reset forms
-  loginForm.reset();
-  signupForm.reset();
-});
-
+    currentUser = null;
+    currentRole = null;
+    mainHeader.style.display = 'none';
+    loginPage.style.display = 'flex';
+  });
 
   // Page switching
   document.querySelectorAll('nav button').forEach(btn => {
@@ -164,69 +157,160 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   async function loadAllData() {
-    await loadEmployees();
-    await loadSalaries();
-    await loadLeaves();
-  }
+  await loadEmployees();
+  await loadSalaries();
+  await loadLeaves();
+  await updateDashboardStats();
+}
 
-  // --- CRUD & Load Functions ---
-  async function loadEmployees() {
-    const snapshot = await get(ref(db, 'employees'));
-    employeeList.innerHTML = '';
-    if (snapshot.exists()) {
-      const data = snapshot.val();
-      for (const id in data) {
-        const emp = data[id];
-        const li = document.createElement('li');
-        li.innerHTML = `<span>${emp.name} - ${emp.role}</span>` +
-          (currentRole === 'admin' ? `<button onclick="editEmployee('${id}','${emp.name}','${emp.role}')">Edit</button>
-          <button onclick="deleteEmployee('${id}')">Delete</button>` : '');
-        employeeList.appendChild(li);
-      }
+// --- Dashboard Stats ---
+async function updateDashboardStats() {
+  try {
+    const empSnapshot = await get(ref(db, 'employees'));
+    const salSnapshot = await get(ref(db, 'salaries'));
+    const leaveSnapshot = await get(ref(db, 'leaves'));
+
+    // Employees count
+    const totalEmployees = empSnapshot.exists() ? Object.keys(empSnapshot.val()).length : 0;
+
+    // Salaries sum
+    let totalSalaries = 0;
+    if (salSnapshot.exists()) {
+      const salaries = salSnapshot.val();
+      for (const id in salaries) totalSalaries += Number(salaries[id].amount || 0);
+    }
+
+    // Leaves sum
+    let totalLeaves = 0;
+    if (leaveSnapshot.exists()) {
+      const leaves = leaveSnapshot.val();
+      for (const id in leaves) totalLeaves += Number(leaves[id].days || 0);
+    }
+
+    // Show stats
+    totalEmployeesLabel.textContent = totalEmployees;
+    totalSalariesLabel.textContent = `₹${totalSalaries}`;
+    totalLeavesLabel.textContent = totalLeaves;
+
+  } catch (err) {
+    console.error("Error updating dashboard stats:", err);
+    totalEmployeesLabel.textContent = 0;
+    totalSalariesLabel.textContent = `₹0`;
+    totalLeavesLabel.textContent = 0;
+  }
+}
+
+// --- Load Employees ---
+async function loadEmployees() {
+  const snapshot = await get(ref(db, 'employees'));
+  employeeList.innerHTML = '';
+  if (snapshot.exists()) {
+    const data = snapshot.val();
+    for (const id in data) {
+      const emp = data[id];
+      const li = document.createElement('li');
+      li.innerHTML = `<span>${emp.name} - ${emp.role}</span>` +
+        (currentRole === 'admin' 
+          ? `<div class="action-buttons">
+               <button class="edit-btn" onclick="editEmployee('${id}','${emp.name}','${emp.role}')">Edit</button>
+               <button class="delete-btn" onclick="deleteEmployee('${id}')">Delete</button>
+             </div>` 
+          : '');
+      employeeList.appendChild(li);
     }
   }
+}
 
-  async function loadSalaries() {
-    const snapshot = await get(ref(db, 'salaries'));
-    salaryList.innerHTML = '';
-    if (snapshot.exists()) {
-      const data = snapshot.val();
-      for (const id in data) {
-        const sal = data[id];
-        const li = document.createElement('li');
-        li.innerHTML = `<span>${sal.name} - ₹${sal.amount}</span>` +
-          (currentRole === 'admin' ? `<button onclick="editSalary('${id}','${sal.name}','${sal.amount}')">Edit</button>
-          <button onclick="deleteSalary('${id}')">Delete</button>` : '');
-        salaryList.appendChild(li);
-      }
+// --- Load Salaries ---
+async function loadSalaries() {
+  const snapshot = await get(ref(db, 'salaries'));
+  salaryList.innerHTML = '';
+  if (snapshot.exists()) {
+    const data = snapshot.val();
+    for (const id in data) {
+      const sal = data[id];
+      const li = document.createElement('li');
+      li.innerHTML = `<span>${sal.name} - ₹${sal.amount}</span>` +
+        (currentRole === 'admin' 
+          ? `<div class="action-buttons">
+               <button class="edit-btn" onclick="editSalary('${id}','${sal.name}','${sal.amount}')">Edit</button>
+               <button class="delete-btn" onclick="deleteSalary('${id}')">Delete</button>
+             </div>` 
+          : '');
+      salaryList.appendChild(li);
     }
   }
+}
 
-  async function loadLeaves() {
-    const snapshot = await get(ref(db, 'leaves'));
-    leaveList.innerHTML = '';
-    if (snapshot.exists()) {
-      const data = snapshot.val();
-      for (const id in data) {
-        const lv = data[id];
-        const li = document.createElement('li');
-        li.innerHTML = `<span>${lv.name} - ${lv.days} days</span>` +
-          (currentRole === 'admin' ? `<button onclick="editLeave('${id}','${lv.name}','${lv.days}')">Edit</button>
-          <button onclick="deleteLeave('${id}')">Delete</button>` : '');
-        leaveList.appendChild(li);
-      }
+// --- Load Leaves ---
+async function loadLeaves() {
+  const snapshot = await get(ref(db, 'leaves'));
+  leaveList.innerHTML = '';
+  if (snapshot.exists()) {
+    const data = snapshot.val();
+    for (const id in data) {
+      const lv = data[id];
+      const li = document.createElement('li');
+      li.innerHTML = `<span>${lv.name} - ${lv.days} days</span>` +
+        (currentRole === 'admin' 
+          ? `<div class="action-buttons">
+               <button class="edit-btn" onclick="editLeave('${id}','${lv.name}','${lv.days}')">Edit</button>
+               <button class="delete-btn" onclick="deleteLeave('${id}')">Delete</button>
+             </div>` 
+          : '');
+      leaveList.appendChild(li);
     }
   }
+}
+
 
   // Edit/Delete functions
-  window.editEmployee = (id, name, role) => { employeeIndex.value = id; employeeName.value = name; employeeRole.value = role; };
-  window.deleteEmployee = async id => { await remove(ref(db, `employees/${id}`)); loadEmployees(); };
+  // --- JS EDITED FOR CLEAN UI & FUNCTIONALITY ---
+window.editEmployee = (id, name, role) => {
+  employeeIndex.value = id;
+  employeeName.value = name;
+  employeeRole.value = role;
+  employeeName.focus();
+};
 
-  window.editSalary = (id, name, amount) => { salaryIndex.value = id; salaryName.value = name; salaryAmount.value = amount; };
-  window.deleteSalary = async id => { await remove(ref(db, `salaries/${id}`)); loadSalaries(); };
+window.deleteEmployee = async id => {
+  if (confirm('Are you sure you want to delete this employee?')) {
+    await remove(ref(db, `employees/${id}`));
+    loadEmployees();
+    updateDashboardStats();
+  }
+};
 
-  window.editLeave = (id, name, days) => { leaveIndex.value = id; leaveName.value = name; leaveDays.value = days; };
-  window.deleteLeave = async id => { await remove(ref(db, `leaves/${id}`)); loadLeaves(); };
+window.editSalary = (id, name, amount) => {
+  salaryIndex.value = id;
+  salaryName.value = name;
+  salaryAmount.value = amount;
+  salaryName.focus();
+};
+
+window.deleteSalary = async id => {
+  if (confirm('Are you sure you want to delete this salary entry?')) {
+    await remove(ref(db, `salaries/${id}`));
+    loadSalaries();
+    updateDashboardStats();
+  }
+};
+
+window.editLeave = (id, name, days) => {
+  leaveIndex.value = id;
+  leaveName.value = name;
+  leaveDays.value = days;
+  leaveName.focus();
+};
+
+window.deleteLeave = async id => {
+  if (confirm('Are you sure you want to delete this leave entry?')) {
+    await remove(ref(db, `leaves/${id}`));
+    loadLeaves();
+    updateDashboardStats();
+  }
+};
+
 
   // Add forms
   employeeForm.addEventListener('submit', async e => {
@@ -240,6 +324,7 @@ document.addEventListener('DOMContentLoaded', () => {
     employeeForm.reset();
     employeeIndex.value = '';
     loadEmployees();
+    updateDashboardStats();
   });
 
   salaryForm.addEventListener('submit', async e => {
@@ -253,6 +338,7 @@ document.addEventListener('DOMContentLoaded', () => {
     salaryForm.reset();
     salaryIndex.value = '';
     loadSalaries();
+    updateDashboardStats();
   });
 
   leaveForm.addEventListener('submit', async e => {
@@ -266,6 +352,7 @@ document.addEventListener('DOMContentLoaded', () => {
     leaveForm.reset();
     leaveIndex.value = '';
     loadLeaves();
+    updateDashboardStats();
   });
 
   // --- SEARCH FILTER ---
@@ -289,4 +376,5 @@ document.addEventListener('DOMContentLoaded', () => {
       li.style.display = li.querySelector('span').textContent.toLowerCase().includes(val) ? 'flex' : 'none';
     });
   });
+
 });
