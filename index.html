@@ -5,6 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Employee Management System</title>
   <link rel="stylesheet" href="style.css" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
 
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-app.js";
@@ -83,54 +84,73 @@
   <section id="dashboard" class="page">
     <div class="card">
       <h2>Welcome <span id="userRoleLabel"></span></h2>
-      <p>Manage Employees, Salaries, and Leaves efficiently using Firebase.</p>
+      <p>Manage Employees, Salaries, and Leaves efficiently.</p>
+
+      <!-- Dashboard Stats -->
+      <div class="dashboard-stats">
+        <div class="stat">
+          <i class="fas fa-users"></i>
+          <h3 id="totalEmployees">0</h3>
+          <p>Total Employees</p>
+        </div>
+        <div class="stat">
+          <i class="fas fa-money-bill"></i>
+          <h3 id="totalSalaries">₹0</h3>
+          <p>Total Salaries</p>
+        </div>
+        <div class="stat">
+          <i class="fas fa-calendar-alt"></i>
+          <h3 id="totalLeaves">0</h3>
+          <p>Total Leaves</p>
+        </div>
+      </div>
     </div>
   </section>
 
-  <!-- EMPLOYEES -->
-  <section id="employees" class="page">
-    <div class="card">
-      <h2>Employees</h2>
-      <form id="employeeForm">
-        <input type="hidden" id="employeeIndex" />
-        <input type="text" id="employeeName" placeholder="Employee Name (e.g., email)" required />
-        <input type="text" id="employeeRole" placeholder="Role (e.g., Manager)" required />
-        <button type="submit">Save Employee</button>
-      </form>
-      <input type="text" id="employeeSearch" placeholder="Search employees..." class="filter" />
-      <ul id="employeeList"></ul>
-    </div>
-  </section>
+  <!-- EMPLOYEES PAGE -->
+<section id="employees" class="page">
+  <div class="card">
+    <h2>Employees</h2>
+    <form id="employeeForm">
+      <input type="text" id="employeeName" placeholder="Employee Name (e.g., email)" />
+      <input type="text" id="employeeRole" placeholder="Role (e.g., Manager)" />
+      <button type="submit">Save Employee</button>
+      <input type="hidden" id="employeeIndex" />
+    </form>
+    <input type="text" id="employeeSearch" placeholder="Search employees..." />
+    <ul id="employeeList"></ul>
+  </div>
+</section>
 
-  <!-- SALARIES -->
-  <section id="salaries" class="page">
-    <div class="card">
-      <h2>Salaries</h2>
-      <form id="salaryForm">
-        <input type="hidden" id="salaryIndex" />
-        <input type="text" id="salaryName" placeholder="Employee Name (e.g., email)" required />
-        <input type="number" id="salaryAmount" placeholder="Salary Amount" required />
-        <button type="submit">Save Salary</button>
-      </form>
-      <input type="text" id="salarySearch" placeholder="Search salaries..." class="filter" />
-      <ul id="salaryList"></ul>
-    </div>
-  </section>
+<!-- SALARIES PAGE -->
+<section id="salaries" class="page">
+  <div class="card">
+    <h2>Salaries</h2>
+    <form id="salaryForm">
+      <input type="text" id="salaryName" placeholder="Employee Name" />
+      <input type="number" id="salaryAmount" placeholder="Salary Amount" />
+      <button type="submit">Save Salary</button>
+      <input type="hidden" id="salaryIndex" />
+    </form>
+    <input type="text" id="salarySearch" placeholder="Search salaries..." />
+    <ul id="salaryList"></ul>
+  </div>
+</section>
 
-  <!-- LEAVES -->
-  <section id="leaves" class="page">
-    <div class="card">
-      <h2>Leaves</h2>
-      <form id="leaveForm">
-        <input type="hidden" id="leaveIndex" />
-        <input type="text" id="leaveName" placeholder="Employee Name (e.g., email)" required />
-        <input type="number" id="leaveDays" placeholder="Leave Days" required />
-        <button type="submit">Save Leave</button>
-      </form>
-      <input type="text" id="leaveSearch" placeholder="Search leaves..." class="filter" />
-      <ul id="leaveList"></ul>
-    </div>
-  </section>
+<!-- LEAVES PAGE -->
+<section id="leaves" class="page">
+  <div class="card">
+    <h2>Leaves</h2>
+    <form id="leaveForm">
+      <input type="text" id="leaveName" placeholder="Employee Name" />
+      <input type="number" id="leaveDays" placeholder="Number of Days" />
+      <button type="submit">Save Leave</button>
+      <input type="hidden" id="leaveIndex" />
+    </form>
+    <input type="text" id="leaveSearch" placeholder="Search leaves..." />
+    <ul id="leaveList"></ul>
+  </div>
+</section>
 
   <script src="script.js" type="module"></script>
 </body>
